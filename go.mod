@@ -1,4 +1,4 @@
-module psql
+module github.com/RipperAcskt/crud-api-go
 
 go 1.18
 
