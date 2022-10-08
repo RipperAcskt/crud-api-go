@@ -220,3 +220,14 @@ func (db Database) Update(w http.ResponseWriter, req *http.Request) {
 	}
 	w.Write(response)
 }
+
+func (db Database) Home(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	fmt.Fprint(w, "<h1>Hello on my server</h1>")
+	fmt.Fprint(w, "<p>/list - watch all information</p>")
+	fmt.Fprint(w, "<p>/create - create person</p>")
+	fmt.Fprint(w, "<p>/delete - delete all or id person</p>")
+	fmt.Fprint(w, "<p>/updateAll - update all field of person</p>")
+	fmt.Fprint(w, "<p>/list - update fields of person seperatly</p>")
+	fmt.Fprint(w, "<p>/help - for more information</p>")
+}

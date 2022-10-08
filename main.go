@@ -18,6 +18,7 @@ func main() {
 	defer db.DbObject.Close()
 
 	mux := http.NewServeMux()
+	mux.Handle("/", http.HandlerFunc(db.Home))
 	mux.Handle("/list", http.HandlerFunc(db.List))
 	mux.Handle("/create", http.HandlerFunc(db.Create))
 	mux.Handle("/delete", http.HandlerFunc(db.Delete))
