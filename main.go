@@ -189,6 +189,64 @@ func (db database) updateAll(w http.ResponseWriter, req *http.Request) {
 
 }
 
+func (db database) update(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPatch {
+		http.Error(w, "Bad method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error while reading body: %v", err), 500)
+		return
+	}
+
+	personToUpdate := person{Age: -1}
+
+	err = json.Unmarshal(body, &personToUpdate)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error while unmarshal: %v", err), 500)
+		return
+	}
+
+	if personToUpdate.Name != "" && personToUpdate.Surname != "" && personToUpdate.Age != -1 {
+		http.Error(w, "For updating all field go to /updateAll", http.StatusBadRequest)
+		return
+	}
+
+	if personToUpdate.Name != "" {
+		_, err = db.dbObject.Exec("UPDATE Person SET firstName = $1 WHERE id = $2", personToUpdate.Name, personToUpdate.Id)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error while updating: %v\n", err), 500)
+			return
+		}
+	}
+	if personToUpdate.Surname != "" {
+		_, err = db.dbObject.Exec("UPDATE Person SET lastName = $1 WHERE id = $2", personToUpdate.Surname, personToUpdate.Id)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error while updating: %v\n", err), 500)
+			return
+		}
+	}
+	if personToUpdate.Age != -1 {
+		_, err = db.dbObject.Exec("UPDATE Person SET age = $1 WHERE id = $2", personToUpdate.Age, personToUpdate.Id)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error while updating: %v\n", err), 500)
+			return
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	resp := make(map[string]string)
+	resp["Status"] = "Updated"
+	jsonResp, err := json.Marshal(resp)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
+		return
+	}
+	w.Write(jsonResp)
+}
+
 func main() {
 	url := "postgres://ripper:150403@localhost:5432/ripper"
 
@@ -201,6 +259,7 @@ func main() {
 	mux.Handle("/create", http.HandlerFunc(db.create))
 	mux.Handle("/delete", http.HandlerFunc(db.delete))
 	mux.Handle("/updateAll", http.HandlerFunc(db.updateAll))
+	mux.Handle("/update", http.HandlerFunc(db.update))
 	log.Fatal(http.ListenAndServe("localhost:8080", mux))
 
 }
