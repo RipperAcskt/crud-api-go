@@ -24,6 +24,7 @@ func main() {
 	mux.Handle("/delete", http.HandlerFunc(db.Delete))
 	mux.Handle("/updateAll", http.HandlerFunc(db.UpdateAll))
 	mux.Handle("/update", http.HandlerFunc(db.Update))
+	mux.Handle("/help", http.HandlerFunc(db.Help))
 	log.Fatal(http.ListenAndServe("localhost:8080", mux))
 
 }

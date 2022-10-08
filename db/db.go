@@ -228,6 +228,14 @@ func (db Database) Home(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprint(w, "<p>/create - create person</p>")
 	fmt.Fprint(w, "<p>/delete - delete all or id person</p>")
 	fmt.Fprint(w, "<p>/updateAll - update all field of person</p>")
-	fmt.Fprint(w, "<p>/list - update fields of person seperatly</p>")
+	fmt.Fprint(w, "<p>/update - update fields of person seperatly</p>")
 	fmt.Fprint(w, "<p>/help - for more information</p>")
+}
+
+func (db Database) Help(w http.ResponseWriter, req *http.Request) {
+	fmt.Fprint(w, "/list - Method: GET\n")
+	fmt.Fprint(w, "/create - Method: POST\n\tNeed in request: name and surname and age\n")
+	fmt.Fprint(w, "/delete - Method: DELETE\n\tNeed in request: id or flag all which show that all table should be cleared\n")
+	fmt.Fprint(w, "/updateAll - Method: PUT\n\tNeed in request: name and surname and age\n")
+	fmt.Fprint(w, "/update - Method: PATCH\n\tNeed in request: name or surname or age. Max two params")
 }
