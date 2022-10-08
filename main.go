@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -20,6 +21,11 @@ type person struct {
 	Name    string `json:"name"`
 	Surname string `json:"lastName"`
 	Age     int    `json:"age"`
+}
+
+type deleteInfo struct {
+	Id             int
+	DeleteAllTable bool `json:"all"`
 }
 
 func (db database) list(w http.ResponseWriter, req *http.Request) {
@@ -49,29 +55,24 @@ func (db database) create(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error while reading body: %v", err), 500)
-		return
-	}
+	var personToCreate person
 
-	var requestJson person
+	errJson := jsonUnmarshal(req.Body, &personToCreate, false)
 
-	err = json.Unmarshal(body, &requestJson)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error while unmarshal: %v", err), 500)
+	if errJson != "" {
+		http.Error(w, errJson, 500)
 		return
 	}
 
 	var badRequest string
 
-	if requestJson.Name == "" {
+	if personToCreate.Name == "" {
 		badRequest += "Fill name\n"
 	}
-	if requestJson.Surname == "" {
+	if personToCreate.Surname == "" {
 		badRequest += "Fill surname\n"
 	}
-	if requestJson.Age <= 0 {
+	if personToCreate.Age <= 0 {
 		badRequest += "Age need to be upper zero\n"
 	}
 	if badRequest != "" {
@@ -79,7 +80,7 @@ func (db database) create(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	_, err = db.dbObject.Exec("INSERT INTO person(firstName, lastName, age) VALUES($1, $2, $3)", requestJson.Name, requestJson.Surname, requestJson.Age)
+	_, err := db.dbObject.Exec("INSERT INTO person(firstName, lastName, age) VALUES($1, $2, $3)", personToCreate.Name, personToCreate.Surname, personToCreate.Age)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error while creating person: %v", err), 500)
 		return
@@ -93,20 +94,12 @@ func (db database) delete(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error while reading body: %v", err), 500)
-		return
-	}
+	var deleteRequest deleteInfo
 
-	var deleteRequest struct {
-		Id             int
-		DeleteAllTable bool `json:"all"`
-	}
+	errJson := jsonUnmarshal(req.Body, &deleteRequest, true)
 
-	err = json.Unmarshal(body, &deleteRequest)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error while unmarshal: %v", err), 500)
+	if errJson != "" {
+		http.Error(w, errJson, 500)
 		return
 	}
 
@@ -152,17 +145,12 @@ func (db database) updateAll(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error while reading body: %v", err), 500)
-		return
-	}
-
 	var personToUpdate person
 
-	err = json.Unmarshal(body, &personToUpdate)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error while unmarshal: %v", err), 500)
+	errJson := jsonUnmarshal(req.Body, &personToUpdate, false)
+
+	if errJson != "" {
+		http.Error(w, errJson, 500)
 		return
 	}
 
@@ -171,7 +159,7 @@ func (db database) updateAll(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	_, err = db.dbObject.Exec("UPDATE Person SET firstName = $1, lastName = $2, age = $3 WHERE id = $4", personToUpdate.Name, personToUpdate.Surname, personToUpdate.Age, personToUpdate.Id)
+	_, err := db.dbObject.Exec("UPDATE Person SET firstName = $1, lastName = $2, age = $3 WHERE id = $4", personToUpdate.Name, personToUpdate.Surname, personToUpdate.Age, personToUpdate.Id)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error while updating: %v\n", err), 500)
 		return
@@ -195,19 +183,16 @@ func (db database) update(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error while reading body: %v", err), 500)
-		return
-	}
-
 	personToUpdate := person{Age: -1}
 
-	err = json.Unmarshal(body, &personToUpdate)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error while unmarshal: %v", err), 500)
+	errJson := jsonUnmarshal(req.Body, &personToUpdate, false)
+
+	if errJson != "" {
+		http.Error(w, errJson, 500)
 		return
 	}
+
+	var err error
 
 	if personToUpdate.Name != "" && personToUpdate.Surname != "" && personToUpdate.Age != -1 {
 		http.Error(w, "For updating all field go to /updateAll", http.StatusBadRequest)
@@ -245,6 +230,24 @@ func (db database) update(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	w.Write(jsonResp)
+}
+
+func jsonUnmarshal(body io.ReadCloser, s interface{}, delete bool) string {
+	readedBody, err := ioutil.ReadAll(body)
+	if err != nil {
+		return fmt.Sprintf("Error while reading body: %v", err)
+	}
+	if delete {
+		err = json.Unmarshal(readedBody, s.(*deleteInfo))
+	} else {
+		err = json.Unmarshal(readedBody, s.(*person))
+	}
+
+	if err != nil {
+		return fmt.Sprintf("Error while unmarshal: %v", err)
+	}
+
+	return ""
 }
 
 func main() {
