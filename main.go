@@ -86,6 +86,14 @@ func (db database) create(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
+	response, err := jsonMarshalResponse("Created")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
+		return
+	}
+	w.Write(response)
+
 }
 
 func (db database) delete(w http.ResponseWriter, req *http.Request) {
@@ -129,14 +137,12 @@ func (db database) delete(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	resp := make(map[string]string)
-	resp["Status"] = "Deleted"
-	jsonResp, err := json.Marshal(resp)
+	response, err := jsonMarshalResponse("Deleted")
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
 		return
 	}
-	w.Write(jsonResp)
+	w.Write(response)
 }
 
 func (db database) updateAll(w http.ResponseWriter, req *http.Request) {
@@ -166,14 +172,12 @@ func (db database) updateAll(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	resp := make(map[string]string)
-	resp["Status"] = "Updated"
-	jsonResp, err := json.Marshal(resp)
+	response, err := jsonMarshalResponse("Updated all")
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
 		return
 	}
-	w.Write(jsonResp)
+	w.Write(response)
 
 }
 
@@ -222,14 +226,12 @@ func (db database) update(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	resp := make(map[string]string)
-	resp["Status"] = "Updated"
-	jsonResp, err := json.Marshal(resp)
+	response, err := jsonMarshalResponse("Updated")
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
 		return
 	}
-	w.Write(jsonResp)
+	w.Write(response)
 }
 
 func jsonUnmarshal(body io.ReadCloser, s interface{}, delete bool) string {
@@ -248,6 +250,16 @@ func jsonUnmarshal(body io.ReadCloser, s interface{}, delete bool) string {
 	}
 
 	return ""
+}
+
+func jsonMarshalResponse(message string) ([]byte, error) {
+	resp := make(map[string]string)
+	resp["Status"] = message
+	jsonResp, err := json.Marshal(resp)
+	if err != nil {
+		return nil, err
+	}
+	return jsonResp, nil
 }
 
 func main() {
