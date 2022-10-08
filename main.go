@@ -86,6 +86,65 @@ func (db database) create(w http.ResponseWriter, req *http.Request) {
 
 }
 
+func (db database) delete(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodDelete {
+		http.Error(w, "Bad method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error while reading body: %v", err), 500)
+		return
+	}
+
+	var deleteRequest struct {
+		Id             int
+		DeleteAllTable bool `json:"all"`
+	}
+
+	err = json.Unmarshal(body, &deleteRequest)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error while unmarshal: %v", err), 500)
+		return
+	}
+
+	if deleteRequest.Id <= 0 && !deleteRequest.DeleteAllTable {
+		http.Error(w, "Id should be upper than zero", http.StatusBadRequest)
+		return
+	}
+
+	stmt, err := db.dbObject.Prepare("DELETE FROM Person WHERE id = $1")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error while preparring request to database: %v", err), 500)
+		return
+	}
+	defer stmt.Close()
+
+	if deleteRequest.DeleteAllTable {
+		_, err := db.dbObject.Exec("DELETE FROM Person")
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error while deleting all information from table: %v\n", err), 500)
+			return
+		}
+	}
+	_, err = stmt.Exec(deleteRequest.Id)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error while deleting id-%d: %v\n", deleteRequest.Id, err), 500)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	resp := make(map[string]string)
+	resp["Status"] = "Deleted"
+	jsonResp, err := json.Marshal(resp)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
+		return
+	}
+	w.Write(jsonResp)
+}
+
 func main() {
 	url := "postgres://ripper:150403@localhost:5432/ripper"
 
@@ -96,6 +155,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/list", http.HandlerFunc(db.list))
 	mux.Handle("/create", http.HandlerFunc(db.create))
+	mux.Handle("/delete", http.HandlerFunc(db.delete))
 	log.Fatal(http.ListenAndServe("localhost:8080", mux))
 
 }
@@ -140,33 +200,5 @@ func update(db *sql.DB) {
 			log.Fatalf("Error while updating age: %v\n", err)
 		}
 
-	}
-}
-
-func delete(db *sql.DB) {
-	var id, maxId int
-
-	db.QueryRow("SELECT MAX(id) FROM Person").Scan(&maxId)
-	fmt.Printf("%v-Отчистить таблицу\n\n", maxId+1)
-
-	fmt.Print("Id: ")
-	fmt.Scanln(&id)
-
-	stmt, err := db.Prepare("DELETE FROM Person WHERE id = $1")
-	if err != nil {
-		log.Fatalf("Error while preparing query: %v\n", err)
-	}
-	defer stmt.Close()
-
-	if id > 0 && id <= maxId {
-		_, err = stmt.Exec(id)
-		if err != nil {
-			log.Fatalf("Error while deleting: %v\n", err)
-		}
-	} else if id == maxId+1 {
-		_, err := db.Exec("DELETE FROM Person")
-		if err != nil {
-			log.Fatalf("Error while deleting all information from table: %v\n", err)
-		}
 	}
 }
