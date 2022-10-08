@@ -2,16 +2,23 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 type database struct {
 	dbObject *sql.DB
+}
+
+type person struct {
+	Name    string `json:"name"`
+	Surname string `json:"lastName"`
+	Age     int    `json:"age"`
 }
 
 func (db database) list(w http.ResponseWriter, req *http.Request) {
@@ -28,11 +35,55 @@ func (db database) list(w http.ResponseWriter, req *http.Request) {
 
 	for rows.Next() {
 		if err = rows.Scan(&id, &firstName, &lastName, &age); err != nil {
-			fmt.Fprintf(os.Stderr, "%v\n", err)
+			fmt.Fprintf(w, "%v\n", err)
 			continue
 		}
 		fmt.Fprintf(w, "Id: %d\nName: %s\nSurname: %s\nAge: %d\n", id, firstName, lastName, age)
 	}
+}
+
+func (db database) create(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		http.Error(w, "Bad method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error while reading body: %v", err), 500)
+		return
+	}
+
+	var requestJson person
+
+	err = json.Unmarshal(body, &requestJson)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error while unmarshal: %v", err), 500)
+		return
+	}
+
+	var badRequest string
+
+	if requestJson.Name == "" {
+		badRequest += "Fill name\n"
+	}
+	if requestJson.Surname == "" {
+		badRequest += "Fill surname\n"
+	}
+	if requestJson.Age <= 0 {
+		badRequest += "Age need to be upper zero\n"
+	}
+	if badRequest != "" {
+		http.Error(w, badRequest, http.StatusBadRequest)
+		return
+	}
+
+	_, err = db.dbObject.Exec("INSERT INTO person(firstName, lastName, age) VALUES($1, $2, $3)", requestJson.Name, requestJson.Surname, requestJson.Age)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error while creating person: %v", err), 500)
+		return
+	}
+
 }
 
 func main() {
@@ -44,6 +95,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/list", http.HandlerFunc(db.list))
+	mux.Handle("/create", http.HandlerFunc(db.create))
 	log.Fatal(http.ListenAndServe("localhost:8080", mux))
 
 }
@@ -54,24 +106,6 @@ func openDB(url string) *sql.DB {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
 	return db
-}
-
-func write(db *sql.DB) {
-	var age int
-	var firstName, lastName string
-
-	fmt.Print("Имя: ")
-	fmt.Scanln(&firstName)
-	fmt.Print("Фамилия: ")
-	fmt.Scanln(&lastName)
-	fmt.Print("Возраст: ")
-	fmt.Scanln(&age)
-
-	_, err := db.Exec("INSERT INTO person(firstName, lastName, age) VALUES($1, $2, $3)", firstName, lastName, age)
-	if err != nil {
-		db.Close()
-		log.Fatalf("Error while writing: %v\n", err)
-	}
 }
 
 func update(db *sql.DB) {
