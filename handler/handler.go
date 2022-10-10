@@ -75,7 +75,7 @@ func (app AppHandler) getUsersHandler(w http.ResponseWriter, req *http.Request) 
 }
 
 func (app AppHandler) createUsersHandler(w http.ResponseWriter, req *http.Request) {
-	var personToCreate json.Person
+	var personToCreate []json.Person
 
 	errJson := json.JsonUnmarshal(req.Body, &personToCreate)
 
@@ -83,24 +83,26 @@ func (app AppHandler) createUsersHandler(w http.ResponseWriter, req *http.Reques
 		log.Fatal(errJson)
 		return
 	}
+	for _, p := range personToCreate {
+		if err := validation(p); err != "" {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
 
-	if err := validation(personToCreate); err != "" {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Header().Set("Content-Type", "application/json")
+			resp, err := json.JsonMarshalError(err)
+			if err != nil {
+				log.Fatal(err)
+			}
 
-		resp, err := json.JsonMarshalError(err)
+			w.Write(resp)
+			return
+		}
+
+		err := db.Create(app.DB, p)
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		w.Write(resp)
-		return
 	}
 
-	err := db.Create(app.DB, personToCreate)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 func validation(p json.Person) string {
@@ -138,7 +140,7 @@ func (app AppHandler) deleteUserHandler(w http.ResponseWriter, req *http.Request
 }
 
 func (app AppHandler) updateUserHandler(w http.ResponseWriter, req *http.Request) {
-	var personToUpdate json.Person
+	var personToUpdate []json.Person
 
 	errJson := json.JsonUnmarshal(req.Body, &personToUpdate)
 
@@ -147,21 +149,24 @@ func (app AppHandler) updateUserHandler(w http.ResponseWriter, req *http.Request
 		return
 	}
 
-	if err := validation(personToUpdate); err != "" {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Header().Set("Content-Type", "application/json")
+	for _, p := range personToUpdate {
+		if err := validation(p); err != "" {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
 
-		resp, err := json.JsonMarshalError(err)
+			resp, err := json.JsonMarshalError(err)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			w.Write(resp)
+			return
+		}
+
+		err := db.Update(app.DB, p)
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		w.Write(resp)
-		return
 	}
 
-	err := db.Update(app.DB, personToUpdate)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
