@@ -19,7 +19,8 @@ func (app AppHandler) Controller(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case http.MethodGet:
 		app.getUsersHandler(w, req)
-
+	case http.MethodPost:
+		app.createUsersHandler(w, req)
 	}
 }
 
@@ -67,4 +68,47 @@ func (app AppHandler) getUsersHandler(w http.ResponseWriter, req *http.Request) 
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(resp)
+}
+
+func (app AppHandler) createUsersHandler(w http.ResponseWriter, req *http.Request) {
+	var personToCreate json.Person
+
+	errJson := json.JsonUnmarshal(req.Body, &personToCreate, false)
+
+	if errJson != nil {
+		log.Fatal(errJson)
+		return
+	}
+
+	if err := validation(personToCreate); err != "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+
+		resp, err := json.JsonMarshalError(err)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		w.Write(resp)
+		return
+	}
+
+	err := db.Create(app.DB, personToCreate)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func validation(p json.Person) string {
+	var err string
+	if p.Name == "" {
+		err += "Fill name\n"
+	}
+	if p.Surname == "" {
+		err += "Fill surname\n"
+	}
+	if p.Age <= 0 {
+		err += "Age need to be upper zero\n"
+	}
+	return err
 }

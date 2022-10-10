@@ -70,51 +70,13 @@ func SelectById(DB *sql.DB, id []int) ([]json.Person, error) {
 	return users, nil
 }
 
-func (db Database) Create(w http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodPost {
-		http.Error(w, "Bad method", http.StatusMethodNotAllowed)
-		return
-	}
+func Create(DB *sql.DB, p json.Person) error {
 
-	var personToCreate json.Person
-
-	errJson := json.JsonUnmarshal(req.Body, &personToCreate, false)
-
-	if errJson != "" {
-		http.Error(w, errJson, 500)
-		return
-	}
-
-	var badRequest string
-
-	if personToCreate.Name == "" {
-		badRequest += "Fill name\n"
-	}
-	if personToCreate.Surname == "" {
-		badRequest += "Fill surname\n"
-	}
-	if personToCreate.Age <= 0 {
-		badRequest += "Age need to be upper zero\n"
-	}
-	if badRequest != "" {
-		http.Error(w, badRequest, http.StatusBadRequest)
-		return
-	}
-
-	_, err := db.DbObject.Exec("INSERT INTO person(firstName, lastName, age) VALUES($1, $2, $3)", personToCreate.Name, personToCreate.Surname, personToCreate.Age)
+	_, err := DB.Exec("INSERT INTO person(firstName, lastName, age) VALUES($1, $2, $3)", p.Name, p.Surname, p.Age)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error while creating person: %v", err), 500)
-		return
+		return fmt.Errorf("exec faild: %v", err)
 	}
-
-	// w.Header().Set("Content-Type", "application/json")
-	// response, err := json.JsonMarshalResponse("Created")
-	// if err != nil {
-	// 	http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
-	// 	return
-	// }
-	// w.Write(response)
-
+	return nil
 }
 
 func (db Database) Delete(w http.ResponseWriter, req *http.Request) {
@@ -125,12 +87,12 @@ func (db Database) Delete(w http.ResponseWriter, req *http.Request) {
 
 	var deleteRequest json.DeleteInfo
 
-	errJson := json.JsonUnmarshal(req.Body, &deleteRequest, true)
+	// errJson := json.JsonUnmarshal(req.Body, &deleteRequest, true)
 
-	if errJson != "" {
-		http.Error(w, errJson, 500)
-		return
-	}
+	// if errJson != "" {
+	// 	http.Error(w, errJson, 500)
+	// 	return
+	// }
 
 	if deleteRequest.Id <= 0 && !deleteRequest.DeleteAllTable {
 		http.Error(w, "Id should be upper than zero", http.StatusBadRequest)
@@ -174,12 +136,12 @@ func (db Database) UpdateAll(w http.ResponseWriter, req *http.Request) {
 
 	var personToUpdate json.Person
 
-	errJson := json.JsonUnmarshal(req.Body, &personToUpdate, false)
+	// errJson := json.JsonUnmarshal(req.Body, &personToUpdate, false)
 
-	if errJson != "" {
-		http.Error(w, errJson, 500)
-		return
-	}
+	// if errJson != "" {
+	// 	http.Error(w, errJson, 500)
+	// 	return
+	// }
 
 	if personToUpdate.Name == "" || personToUpdate.Surname == "" {
 		http.Error(w, "All fields should be filled in", http.StatusBadRequest)
@@ -210,12 +172,12 @@ func (db Database) Update(w http.ResponseWriter, req *http.Request) {
 
 	personToUpdate := json.Person{Age: -1}
 
-	errJson := json.JsonUnmarshal(req.Body, &personToUpdate, false)
+	// errJson := json.JsonUnmarshal(req.Body, &personToUpdate, false)
 
-	if errJson != "" {
-		http.Error(w, errJson, 500)
-		return
-	}
+	// if errJson != "" {
+	// 	http.Error(w, errJson, 500)
+	// 	return
+	// }
 
 	var err error
 

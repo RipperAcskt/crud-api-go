@@ -19,10 +19,10 @@ type DeleteInfo struct {
 	DeleteAllTable bool `json:"all"`
 }
 
-func JsonUnmarshal(body io.ReadCloser, s interface{}, delete bool) string {
+func JsonUnmarshal(body io.ReadCloser, s interface{}, delete bool) error {
 	readedBody, err := ioutil.ReadAll(body)
 	if err != nil {
-		return fmt.Sprintf("Error while reading body: %v", err)
+		return fmt.Errorf("readAll faild: %v", err)
 	}
 	if delete {
 		err = json.Unmarshal(readedBody, s.(*DeleteInfo))
@@ -31,14 +31,24 @@ func JsonUnmarshal(body io.ReadCloser, s interface{}, delete bool) string {
 	}
 
 	if err != nil {
-		return fmt.Sprintf("Error while unmarshal: %v", err)
+		return fmt.Errorf("unmarshal faild: %v", err)
 	}
 
-	return ""
+	return nil
 }
 
 func JsonMarshalResponse(p []Person) ([]byte, error) {
 	jsonResp, err := json.Marshal(p)
+	if err != nil {
+		return nil, err
+	}
+	return jsonResp, nil
+}
+
+func JsonMarshalError(errText string) ([]byte, error) {
+	message := make(map[string]string)
+	message["Error"] = errText
+	jsonResp, err := json.Marshal(message)
 	if err != nil {
 		return nil, err
 	}
