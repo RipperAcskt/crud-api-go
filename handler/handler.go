@@ -21,6 +21,8 @@ func (app AppHandler) Controller(w http.ResponseWriter, req *http.Request) {
 		app.getUsersHandler(w, req)
 	case http.MethodPost:
 		app.createUsersHandler(w, req)
+	case http.MethodDelete:
+		app.deleteUserHandler(w, req)
 	}
 }
 
@@ -73,7 +75,7 @@ func (app AppHandler) getUsersHandler(w http.ResponseWriter, req *http.Request) 
 func (app AppHandler) createUsersHandler(w http.ResponseWriter, req *http.Request) {
 	var personToCreate json.Person
 
-	errJson := json.JsonUnmarshal(req.Body, &personToCreate, false)
+	errJson := json.JsonUnmarshal(req.Body, &personToCreate)
 
 	if errJson != nil {
 		log.Fatal(errJson)
@@ -111,4 +113,24 @@ func validation(p json.Person) string {
 		err += "Age need to be upper zero\n"
 	}
 	return err
+}
+
+func (app AppHandler) deleteUserHandler(w http.ResponseWriter, req *http.Request) {
+
+	queryFlag, id, err := chekQuery(req.URL.Query())
+	if err != nil {
+		log.Fatal(err)
+	}
+	if queryFlag {
+		err := db.DeleteById(app.DB, id)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		err := db.DeleteAll(app.DB)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 }

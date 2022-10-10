@@ -14,22 +14,13 @@ type Person struct {
 	Age     int    `json:"age"`
 }
 
-type DeleteInfo struct {
-	Id             int
-	DeleteAllTable bool `json:"all"`
-}
-
-func JsonUnmarshal(body io.ReadCloser, s interface{}, delete bool) error {
+func JsonUnmarshal(body io.ReadCloser, s interface{}) error {
 	readedBody, err := ioutil.ReadAll(body)
 	if err != nil {
 		return fmt.Errorf("readAll faild: %v", err)
 	}
-	if delete {
-		err = json.Unmarshal(readedBody, s.(*DeleteInfo))
-	} else {
-		err = json.Unmarshal(readedBody, s.(*Person))
-	}
 
+	err = json.Unmarshal(readedBody, s.(*Person))
 	if err != nil {
 		return fmt.Errorf("unmarshal faild: %v", err)
 	}

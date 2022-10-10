@@ -79,53 +79,36 @@ func Create(DB *sql.DB, p json.Person) error {
 	return nil
 }
 
-func (db Database) Delete(w http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodDelete {
-		http.Error(w, "Bad method", http.StatusMethodNotAllowed)
-		return
-	}
+func DeleteAll(DB *sql.DB) error {
 
-	var deleteRequest json.DeleteInfo
-
-	// errJson := json.JsonUnmarshal(req.Body, &deleteRequest, true)
-
-	// if errJson != "" {
-	// 	http.Error(w, errJson, 500)
-	// 	return
-	// }
-
-	if deleteRequest.Id <= 0 && !deleteRequest.DeleteAllTable {
-		http.Error(w, "Id should be upper than zero", http.StatusBadRequest)
-		return
-	}
-
-	stmt, err := db.DbObject.Prepare("DELETE FROM Person WHERE id = $1")
+	_, err := DB.Exec("DELETE FROM Person")
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error while preparring request to database: %v", err), 500)
-		return
+		return fmt.Errorf("exec faild: %v", err)
 	}
-	defer stmt.Close()
+	return nil
+}
 
-	if deleteRequest.DeleteAllTable {
-		_, err := db.DbObject.Exec("DELETE FROM Person")
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error while deleting all information from table: %v\n", err), 500)
-			return
+func DeleteById(DB *sql.DB, id []int) error {
+	params := make([]interface{}, len(id))
+	for i, v := range id {
+		params[i] = v
+	}
+
+	request := "DELETE FROM Person WHERE id IN ("
+	for i := 0; i < len(id); i++ {
+		request += "$" + fmt.Sprint(i+1)
+		if i != len(id)-1 {
+			request += ", "
 		}
 	}
-	_, err = stmt.Exec(deleteRequest.Id)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error while deleting id-%d: %v\n", deleteRequest.Id, err), 500)
-		return
-	}
+	request += ")"
 
-	// w.Header().Set("Content-Type", "application/json")
-	// response, err := json.JsonMarshalResponse("Deleted")
-	// if err != nil {
-	// 	http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
-	// 	return
-	// }
-	// w.Write(response)
+	_, err := DB.Exec(request, params...)
+
+	if err != nil {
+		return fmt.Errorf("exec faild: %v", err)
+	}
+	return nil
 }
 
 func (db Database) UpdateAll(w http.ResponseWriter, req *http.Request) {
