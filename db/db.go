@@ -3,16 +3,11 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"net/http"
 
 	"github.com/RipperAcskt/crud-api-go/json"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
-
-type Database struct {
-	DbObject *sql.DB
-}
 
 func SelectAll(DB *sql.DB) ([]json.Person, error) {
 	rows, err := DB.Query("SELECT * FROM Person ORDER BY id")
@@ -111,91 +106,11 @@ func DeleteById(DB *sql.DB, id []int) error {
 	return nil
 }
 
-func (db Database) UpdateAll(w http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodPut {
-		http.Error(w, "Bad method", http.StatusMethodNotAllowed)
-		return
-	}
+func Update(DB *sql.DB, p json.Person) error {
 
-	var personToUpdate json.Person
-
-	// errJson := json.JsonUnmarshal(req.Body, &personToUpdate, false)
-
-	// if errJson != "" {
-	// 	http.Error(w, errJson, 500)
-	// 	return
-	// }
-
-	if personToUpdate.Name == "" || personToUpdate.Surname == "" {
-		http.Error(w, "All fields should be filled in", http.StatusBadRequest)
-		return
-	}
-
-	_, err := db.DbObject.Exec("UPDATE Person SET firstName = $1, lastName = $2, age = $3 WHERE id = $4", personToUpdate.Name, personToUpdate.Surname, personToUpdate.Age, personToUpdate.Id)
+	_, err := DB.Exec("UPDATE Person SET firstName = $1, lastName = $2, age = $3 WHERE id = $4", p.Name, p.Surname, p.Age, p.Id)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error while updating: %v\n", err), 500)
-		return
+		return fmt.Errorf(fmt.Sprintf("exec faild: %v\n", err), 500)
 	}
-
-	// w.Header().Set("Content-Type", "application/json")
-	// response, err := json.JsonMarshalResponse("Updated all")
-	// if err != nil {
-	// 	http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
-	// 	return
-	// }
-	// w.Write(response)
-
-}
-
-func (db Database) Update(w http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodPatch {
-		http.Error(w, "Bad method", http.StatusMethodNotAllowed)
-		return
-	}
-
-	personToUpdate := json.Person{Age: -1}
-
-	// errJson := json.JsonUnmarshal(req.Body, &personToUpdate, false)
-
-	// if errJson != "" {
-	// 	http.Error(w, errJson, 500)
-	// 	return
-	// }
-
-	var err error
-
-	if personToUpdate.Name != "" && personToUpdate.Surname != "" && personToUpdate.Age != -1 {
-		http.Error(w, "For updating all field go to /updateAll", http.StatusBadRequest)
-		return
-	}
-
-	if personToUpdate.Name != "" {
-		_, err = db.DbObject.Exec("UPDATE Person SET firstName = $1 WHERE id = $2", personToUpdate.Name, personToUpdate.Id)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error while updating: %v\n", err), 500)
-			return
-		}
-	}
-	if personToUpdate.Surname != "" {
-		_, err = db.DbObject.Exec("UPDATE Person SET lastName = $1 WHERE id = $2", personToUpdate.Surname, personToUpdate.Id)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error while updating: %v\n", err), 500)
-			return
-		}
-	}
-	if personToUpdate.Age != -1 {
-		_, err = db.DbObject.Exec("UPDATE Person SET age = $1 WHERE id = $2", personToUpdate.Age, personToUpdate.Id)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error while updating: %v\n", err), 500)
-			return
-		}
-	}
-
-	// w.Header().Set("Content-Type", "application/json")
-	// response, err := json.JsonMarshalResponse("Updated")
-	// if err != nil {
-	// 	http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
-	// 	return
-	// }
-	// w.Write(response)
+	return nil
 }

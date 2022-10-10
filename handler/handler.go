@@ -23,6 +23,8 @@ func (app AppHandler) Controller(w http.ResponseWriter, req *http.Request) {
 		app.createUsersHandler(w, req)
 	case http.MethodDelete:
 		app.deleteUserHandler(w, req)
+	case http.MethodPut:
+		app.updateUserHandler(w, req)
 	}
 }
 
@@ -104,13 +106,13 @@ func (app AppHandler) createUsersHandler(w http.ResponseWriter, req *http.Reques
 func validation(p json.Person) string {
 	var err string
 	if p.Name == "" {
-		err += "Fill name\n"
+		err += "Fill name."
 	}
 	if p.Surname == "" {
-		err += "Fill surname\n"
+		err += "Fill surname."
 	}
 	if p.Age <= 0 {
-		err += "Age need to be upper zero\n"
+		err += "Age need to be upper zero."
 	}
 	return err
 }
@@ -133,4 +135,33 @@ func (app AppHandler) deleteUserHandler(w http.ResponseWriter, req *http.Request
 		}
 	}
 
+}
+
+func (app AppHandler) updateUserHandler(w http.ResponseWriter, req *http.Request) {
+	var personToUpdate json.Person
+
+	errJson := json.JsonUnmarshal(req.Body, &personToUpdate)
+
+	if errJson != nil {
+		log.Fatal(errJson)
+		return
+	}
+
+	if err := validation(personToUpdate); err != "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+
+		resp, err := json.JsonMarshalError(err)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		w.Write(resp)
+		return
+	}
+
+	err := db.Update(app.DB, personToUpdate)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
