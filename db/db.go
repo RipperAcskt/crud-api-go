@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/RipperAcskt/crud-api-go/json"
@@ -19,7 +18,42 @@ func SelectAll(DB *sql.DB) ([]json.Person, error) {
 	rows, err := DB.Query("SELECT * FROM Person ORDER BY id")
 
 	if err != nil {
-		log.Fatalf("Error while doing request to database for output table: %v\n", err)
+		return nil, fmt.Errorf("query faild: %v", err)
+	}
+
+	defer rows.Close()
+
+	var users []json.Person
+	var user json.Person
+
+	for rows.Next() {
+		if err = rows.Scan(&user.Id, &user.Name, &user.Surname, &user.Age); err != nil {
+			return nil, fmt.Errorf("scan faild: %v", err)
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}
+
+func SelectById(DB *sql.DB, id []int) ([]json.Person, error) {
+	params := make([]interface{}, len(id))
+	for i, v := range id {
+		params[i] = v
+	}
+
+	request := "SELECT * FROM Person WHERE id IN ("
+	for i := 0; i < len(id); i++ {
+		request += "$" + fmt.Sprint(i+1)
+		if i != len(id)-1 {
+			request += ", "
+		}
+	}
+	request += ") ORDER BY id"
+
+	rows, err := DB.Query(request, params...)
+
+	if err != nil {
+		return nil, fmt.Errorf("query faild: %v", err)
 	}
 
 	defer rows.Close()

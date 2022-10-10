@@ -23,25 +23,42 @@ func (app AppHandler) Controller(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func chekQuery(query url.Values) (bool, []int) {
+func chekQuery(query url.Values) (bool, []int, error) {
 
 	idStringMass := query["id"]
 	if len(idStringMass) == 0 {
-		return false, nil
+		return false, nil, nil
 	}
 
 	var idIntMass []int
 	for _, idString := range idStringMass {
-		idInt, _ := strconv.Atoi(idString)
+		idInt, err := strconv.Atoi(idString)
+		if err != nil {
+			return true, nil, err
+		}
 		idIntMass = append(idIntMass, idInt)
 	}
-	return true, idIntMass
+	return true, idIntMass, nil
 }
 
 func (app AppHandler) getUsersHandler(w http.ResponseWriter, req *http.Request) {
-	users, err := db.SelectAll(app.DB)
+	var users []json.Person
+	var err error
+
+	queryFlag, id, err := chekQuery(req.URL.Query())
 	if err != nil {
 		log.Fatal(err)
+	}
+	if queryFlag {
+		users, err = db.SelectById(app.DB, id)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		users, err = db.SelectAll(app.DB)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	resp, err := json.JsonMarshalResponse(users)
