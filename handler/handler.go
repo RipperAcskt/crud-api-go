@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/RipperAcskt/crud-api-go/db"
 	"github.com/RipperAcskt/crud-api-go/json"
+	"github.com/RipperAcskt/crud-api-go/repo/db"
 )
 
 type AppHandler struct {
