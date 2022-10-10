@@ -15,11 +15,8 @@ type Database struct {
 	DbObject *sql.DB
 }
 
-func (db Database) List(w http.ResponseWriter, req *http.Request) {
-	var id, age int
-	var firstName, lastName string
-
-	rows, err := db.DbObject.Query("SELECT * FROM Person ORDER BY id")
+func SelectAll(DB *sql.DB) ([]json.Person, error) {
+	rows, err := DB.Query("SELECT * FROM Person ORDER BY id")
 
 	if err != nil {
 		log.Fatalf("Error while doing request to database for output table: %v\n", err)
@@ -27,13 +24,16 @@ func (db Database) List(w http.ResponseWriter, req *http.Request) {
 
 	defer rows.Close()
 
+	var users []json.Person
+	var user json.Person
+
 	for rows.Next() {
-		if err = rows.Scan(&id, &firstName, &lastName, &age); err != nil {
-			fmt.Fprintf(w, "%v\n", err)
-			continue
+		if err = rows.Scan(&user.Id, &user.Name, &user.Surname, &user.Age); err != nil {
+			return nil, fmt.Errorf("scan faild: %v", err)
 		}
-		fmt.Fprintf(w, "Id: %d\nName: %s\nSurname: %s\nAge: %d\n", id, firstName, lastName, age)
+		users = append(users, user)
 	}
+	return users, nil
 }
 
 func (db Database) Create(w http.ResponseWriter, req *http.Request) {
@@ -73,13 +73,13 @@ func (db Database) Create(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	response, err := json.JsonMarshalResponse("Created")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
-		return
-	}
-	w.Write(response)
+	// w.Header().Set("Content-Type", "application/json")
+	// response, err := json.JsonMarshalResponse("Created")
+	// if err != nil {
+	// 	http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
+	// 	return
+	// }
+	// w.Write(response)
 
 }
 
@@ -123,13 +123,13 @@ func (db Database) Delete(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	response, err := json.JsonMarshalResponse("Deleted")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
-		return
-	}
-	w.Write(response)
+	// w.Header().Set("Content-Type", "application/json")
+	// response, err := json.JsonMarshalResponse("Deleted")
+	// if err != nil {
+	// 	http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
+	// 	return
+	// }
+	// w.Write(response)
 }
 
 func (db Database) UpdateAll(w http.ResponseWriter, req *http.Request) {
@@ -158,13 +158,13 @@ func (db Database) UpdateAll(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	response, err := json.JsonMarshalResponse("Updated all")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
-		return
-	}
-	w.Write(response)
+	// w.Header().Set("Content-Type", "application/json")
+	// response, err := json.JsonMarshalResponse("Updated all")
+	// if err != nil {
+	// 	http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
+	// 	return
+	// }
+	// w.Write(response)
 
 }
 
@@ -212,11 +212,11 @@ func (db Database) Update(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	response, err := json.JsonMarshalResponse("Updated")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
-		return
-	}
-	w.Write(response)
+	// w.Header().Set("Content-Type", "application/json")
+	// response, err := json.JsonMarshalResponse("Updated")
+	// if err != nil {
+	// 	http.Error(w, fmt.Sprintf("Error while marshalling: %v\n", err), 500)
+	// 	return
+	// }
+	// w.Write(response)
 }

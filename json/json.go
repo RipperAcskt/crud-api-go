@@ -37,10 +37,8 @@ func JsonUnmarshal(body io.ReadCloser, s interface{}, delete bool) string {
 	return ""
 }
 
-func JsonMarshalResponse(message string) ([]byte, error) {
-	resp := make(map[string]string)
-	resp["Status"] = message
-	jsonResp, err := json.Marshal(resp)
+func JsonMarshalResponse(p []Person) ([]byte, error) {
+	jsonResp, err := json.Marshal(p)
 	if err != nil {
 		return nil, err
 	}
