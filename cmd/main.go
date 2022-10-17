@@ -5,15 +5,14 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/RipperAcskt/crud-api-go/handler"
-
+	"github.com/RipperAcskt/crud-api-go/internal/restapi"
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 func main() {
 	url := "postgres://ripper:150403@localhost:5432/ripper"
 
-	var app handler.AppHandler
+	var app restapi.AppHandler
 	app.DB = openDB(url)
 	defer app.DB.Close()
 

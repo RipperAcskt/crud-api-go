@@ -1,15 +1,15 @@
-package db
+package postgres
 
 import (
 	"database/sql"
 	"fmt"
 
-	"github.com/RipperAcskt/crud-api-go/json"
+	"github.com/RipperAcskt/crud-api-go/internal/model"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
-func SelectAll(DB *sql.DB) ([]json.Person, error) {
+func SelectAll(DB *sql.DB) ([]model.User, error) {
 	rows, err := DB.Query("SELECT * FROM Person ORDER BY id")
 
 	if err != nil {
@@ -18,11 +18,11 @@ func SelectAll(DB *sql.DB) ([]json.Person, error) {
 
 	defer rows.Close()
 
-	var users []json.Person
-	var user json.Person
+	var users []model.User
+	var user model.User
 
 	for rows.Next() {
-		if err = rows.Scan(&user.Id, &user.Name, &user.Surname, &user.Age); err != nil {
+		if err = rows.Scan(&user.Id, &user.Name, &user.LastName, &user.Age); err != nil {
 			return nil, fmt.Errorf("scan faild: %v", err)
 		}
 		users = append(users, user)
@@ -30,7 +30,7 @@ func SelectAll(DB *sql.DB) ([]json.Person, error) {
 	return users, nil
 }
 
-func SelectById(DB *sql.DB, id []int) ([]json.Person, error) {
+func SelectById(DB *sql.DB, id []int) ([]model.User, error) {
 	params := make([]interface{}, len(id))
 	for i, v := range id {
 		params[i] = v
@@ -53,11 +53,11 @@ func SelectById(DB *sql.DB, id []int) ([]json.Person, error) {
 
 	defer rows.Close()
 
-	var users []json.Person
-	var user json.Person
+	var users []model.User
+	var user model.User
 
 	for rows.Next() {
-		if err = rows.Scan(&user.Id, &user.Name, &user.Surname, &user.Age); err != nil {
+		if err = rows.Scan(&user.Id, &user.Name, &user.LastName, &user.Age); err != nil {
 			return nil, fmt.Errorf("scan faild: %v", err)
 		}
 		users = append(users, user)
@@ -65,9 +65,9 @@ func SelectById(DB *sql.DB, id []int) ([]json.Person, error) {
 	return users, nil
 }
 
-func Create(DB *sql.DB, p json.Person) error {
+func Create(DB *sql.DB, p model.User) error {
 
-	_, err := DB.Exec("INSERT INTO person(firstName, lastName, age) VALUES($1, $2, $3)", p.Name, p.Surname, p.Age)
+	_, err := DB.Exec("INSERT INTO person(firstName, lastName, age) VALUES($1, $2, $3)", p.Name, p.LastName, p.Age)
 	if err != nil {
 		return fmt.Errorf("exec faild: %v", err)
 	}
@@ -106,9 +106,9 @@ func DeleteById(DB *sql.DB, id []int) error {
 	return nil
 }
 
-func Update(DB *sql.DB, p json.Person) error {
+func Update(DB *sql.DB, p model.User) error {
 
-	_, err := DB.Exec("UPDATE Person SET firstName = $1, lastName = $2, age = $3 WHERE id = $4", p.Name, p.Surname, p.Age, p.Id)
+	_, err := DB.Exec("UPDATE Person SET firstName = $1, lastName = $2, age = $3 WHERE id = $4", p.Name, p.LastName, p.Age, p.Id)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("exec faild: %v\n", err), 500)
 	}
