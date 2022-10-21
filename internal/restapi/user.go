@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/RipperAcskt/crud-api-go/internal/model"
-	"github.com/RipperAcskt/crud-api-go/internal/repo/postgres"
 )
 
 func (app AppHandler) getUsersHandler(w http.ResponseWriter, req *http.Request) {
@@ -18,12 +17,12 @@ func (app AppHandler) getUsersHandler(w http.ResponseWriter, req *http.Request) 
 		log.Fatal(err)
 	}
 	if queryFlag {
-		users, err = postgres.SelectById(app.DB, id)
+		users, err = app.postgres.SelectById(id)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		users, err = postgres.SelectAll(app.DB)
+		users, err = app.postgres.SelectAll()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -60,7 +59,7 @@ func (app AppHandler) createUsersHandler(w http.ResponseWriter, req *http.Reques
 			return
 		}
 
-		err := postgres.Create(app.DB, u)
+		err := app.postgres.Create(u)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -75,12 +74,12 @@ func (app AppHandler) deleteUserHandler(w http.ResponseWriter, req *http.Request
 		log.Fatal(err)
 	}
 	if queryFlag {
-		err := postgres.DeleteById(app.DB, id)
+		err := app.postgres.DeleteById(id)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		err := postgres.DeleteAll(app.DB)
+		err := app.postgres.DeleteAll()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -112,7 +111,7 @@ func (app AppHandler) updateUserHandler(w http.ResponseWriter, req *http.Request
 			return
 		}
 
-		err := postgres.Update(app.DB, u)
+		err := app.postgres.Update(u)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -1,7 +1,6 @@
 package restapi
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,10 +10,21 @@ import (
 	"strconv"
 
 	"github.com/RipperAcskt/crud-api-go/internal/model"
+	"github.com/RipperAcskt/crud-api-go/internal/repo/postgres"
 )
 
 type AppHandler struct {
-	DB *sql.DB
+	postgres *postgres.Postgres
+}
+
+func New(p *postgres.Postgres) *AppHandler {
+	var a AppHandler
+	a.postgres = p
+	return &a
+}
+
+func (app AppHandler) Close() error {
+	return app.postgres.Close()
 }
 
 func (app AppHandler) Controller(w http.ResponseWriter, req *http.Request) {
