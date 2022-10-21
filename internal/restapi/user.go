@@ -46,7 +46,7 @@ func (app AppHandler) createUsersHandler(w http.ResponseWriter, req *http.Reques
 		return
 	}
 	for _, u := range userToCreate {
-		if err := u.Validation(); err != "" {
+		if err := u.Validate(); err != "" {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Header().Set("Content-Type", "application/json")
 
@@ -98,7 +98,7 @@ func (app AppHandler) updateUserHandler(w http.ResponseWriter, req *http.Request
 	}
 
 	for _, u := range userToUpdate {
-		if err := u.Validation(); err != "" {
+		if err := u.Validate(); err != "" {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Header().Set("Content-Type", "application/json")
 

@@ -7,7 +7,7 @@ type User struct {
 	Age      int
 }
 
-func (u *User) Validation() string {
+func (u *User) Validate() string {
 	var err string
 	if u.Name == "" {
 		err += "Fill name."
