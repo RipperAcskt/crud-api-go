@@ -27,7 +27,7 @@ func (app AppHandler) Close() error {
 	return app.postgres.Close()
 }
 
-func (app AppHandler) Controller(w http.ResponseWriter, req *http.Request) {
+func (app AppHandler) CheckMethod(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case http.MethodGet:
 		app.getUsersHandler(w, req)

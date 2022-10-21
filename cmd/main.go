@@ -22,7 +22,7 @@ func main() {
 	defer app.Close()
 
 	mux := http.NewServeMux()
-	mux.Handle("/users", http.HandlerFunc(app.Controller))
+	mux.Handle("/users", http.HandlerFunc(app.CheckMethod))
 	log.Fatal(http.ListenAndServe("localhost:8080", mux))
 
 }
