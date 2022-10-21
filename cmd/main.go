@@ -4,9 +4,10 @@ import (
 	"log"
 	"net/http"
 
+	_ "github.com/jackc/pgx/v4/stdlib"
+
 	"github.com/RipperAcskt/crud-api-go/internal/repo/postgres"
 	"github.com/RipperAcskt/crud-api-go/internal/restapi"
-	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 func main() {
@@ -23,6 +24,6 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/users", http.HandlerFunc(app.CheckMethod))
-	log.Fatal(http.ListenAndServe("localhost:8080", mux))
 
+	log.Fatal(http.ListenAndServe("localhost:8080", mux))
 }

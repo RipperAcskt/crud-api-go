@@ -63,7 +63,6 @@ func (p Postgres) SelectById(id []int) ([]model.User, error) {
 }
 
 func (p Postgres) Create(u model.User) error {
-
 	_, err := p.db.Exec("INSERT INTO person(firstName, lastName, age) VALUES($1, $2, $3)", u.Name, u.LastName, u.Age)
 	if err != nil {
 		return fmt.Errorf("exec faild: %v", err)
@@ -72,7 +71,6 @@ func (p Postgres) Create(u model.User) error {
 }
 
 func (p Postgres) DeleteAll() error {
-
 	_, err := p.db.Exec("DELETE FROM Person")
 	if err != nil {
 		return fmt.Errorf("exec faild: %v", err)
@@ -104,7 +102,6 @@ func (p Postgres) DeleteById(id []int) error {
 }
 
 func (p Postgres) Update(u model.User) error {
-
 	_, err := p.db.Exec("UPDATE Person SET firstName = $1, lastName = $2, age = $3 WHERE id = $4", u.Name, u.LastName, u.Age, u.Id)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("exec faild: %v\n", err), 500)

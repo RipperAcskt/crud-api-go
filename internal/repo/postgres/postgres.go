@@ -12,15 +12,14 @@ type Postgres struct {
 }
 
 func New(url string) (*Postgres, error) {
-	var p Postgres
-
 	db, err := sql.Open("pgx", url)
 	if err != nil {
-		return &p, fmt.Errorf("open faild: %v", err)
+		return nil, fmt.Errorf("open faild: %v", err)
 	}
 
-	p.db = db
-	return &p, nil
+	return &Postgres{
+		db: db,
+	}, nil
 }
 
 func (p *Postgres) Close() error {

@@ -68,7 +68,6 @@ func (app AppHandler) createUsersHandler(w http.ResponseWriter, req *http.Reques
 }
 
 func (app AppHandler) deleteUserHandler(w http.ResponseWriter, req *http.Request) {
-
 	queryFlag, id, err := chekQuery(req.URL.Query())
 	if err != nil {
 		log.Fatal(err)
@@ -116,5 +115,4 @@ func (app AppHandler) updateUserHandler(w http.ResponseWriter, req *http.Request
 			log.Fatal(err)
 		}
 	}
-
 }

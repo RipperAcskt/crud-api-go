@@ -18,9 +18,9 @@ type AppHandler struct {
 }
 
 func New(p *postgres.Postgres) *AppHandler {
-	var a AppHandler
-	a.postgres = p
-	return &a
+	return &AppHandler{
+		postgres: p,
+	}
 }
 
 func (app AppHandler) Close() error {
@@ -41,7 +41,6 @@ func (app AppHandler) CheckMethod(w http.ResponseWriter, req *http.Request) {
 }
 
 func chekQuery(query url.Values) (bool, []int, error) {
-
 	idStringMass := query["id"]
 	if len(idStringMass) == 0 {
 		return false, nil, nil
