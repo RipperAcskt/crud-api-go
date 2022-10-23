@@ -6,14 +6,18 @@ import (
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 
+	"github.com/RipperAcskt/crud-api-go/internal/config"
 	"github.com/RipperAcskt/crud-api-go/internal/repo/postgres"
 	"github.com/RipperAcskt/crud-api-go/internal/restapi"
 )
 
 func main() {
-	url := "postgres://ripper:150403@localhost:5432/ripper"
+	cfg, err := config.New()
+	if err != nil {
+		log.Fatalf("config new faild: %v", err)
+	}
 
-	pg, err := postgres.New(url)
+	pg, err := postgres.New(cfg.Url)
 	if err != nil {
 		log.Fatalf("postgres new faild: %v", err)
 	}
@@ -25,5 +29,6 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/users", http.HandlerFunc(app.CheckMethod))
 
-	log.Fatal(http.ListenAndServe("localhost:8080", mux))
+	address := cfg.Ip + ":" + cfg.Port
+	log.Fatal(http.ListenAndServe(address, mux))
 }
