@@ -60,12 +60,12 @@ func chekQuery(query url.Values) (bool, []int, error) {
 func JsonUnmarshal(body io.ReadCloser, u *[]model.User) error {
 	readedBody, err := ioutil.ReadAll(body)
 	if err != nil {
-		return fmt.Errorf("readAll faild: %v", err)
+		return fmt.Errorf("readAll failed: %v", err)
 	}
 
 	err = json.Unmarshal(readedBody, &u)
 	if err != nil {
-		return fmt.Errorf("unmarshal faild: %v", err)
+		return fmt.Errorf("unmarshal failed: %v", err)
 	}
 
 	return nil

@@ -14,15 +14,15 @@ type Config struct {
 }
 
 func New() (*Config, error) {
-	yamlFile, err := ioutil.ReadFile("../config.yaml")
+	yamlFile, err := ioutil.ReadFile("../config/config.yaml")
 	if err != nil {
-		return nil, fmt.Errorf("readFile faild: %v", err)
+		return nil, fmt.Errorf("readFile failed: %v", err)
 	}
 
 	c := &Config{}
 	err = yaml.Unmarshal(yamlFile, c)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal faild: %v", err)
+		return nil, fmt.Errorf("unmarshal failed: %v", err)
 	}
 	return c, nil
 }
