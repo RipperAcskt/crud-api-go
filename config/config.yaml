@@ -1,4 +1,4 @@
-addr: localhost:8080
+addr: :8080
 host: localhost
 port: "5432"
 user: ripper
