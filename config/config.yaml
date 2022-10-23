@@ -1,3 +1,6 @@
-url: postgres://ripper:150403@localhost:5432/ripper
-ip: localhost
-port: "8080"
+addr: localhost:8080
+host: localhost
+port: "5432"
+user: ripper
+password: "150403"
+DBName: "ripper"

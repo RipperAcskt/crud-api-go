@@ -8,9 +8,16 @@ import (
 )
 
 type Config struct {
-	Url  string
-	Ip   string
-	Port string
+	Addr     string
+	Postgres *Postgres `yaml:",inline"`
+}
+
+type Postgres struct {
+	Host     string
+	Port     string
+	User     string
+	Password string
+	DBName   string
 }
 
 func New() (*Config, error) {
@@ -25,4 +32,8 @@ func New() (*Config, error) {
 		return nil, fmt.Errorf("unmarshal failed: %v", err)
 	}
 	return c, nil
+}
+
+func (p *Postgres) GetConnectionUrl() string {
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s", p.User, p.Password, p.Host, p.Port, p.DBName)
 }

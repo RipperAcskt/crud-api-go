@@ -17,7 +17,7 @@ func main() {
 		log.Fatalf("config new failed: %v", err)
 	}
 
-	pg, err := postgres.New(cfg.Url)
+	pg, err := postgres.New(cfg.Postgres.GetConnectionUrl())
 	if err != nil {
 		log.Fatalf("postgres new failed: %v", err)
 	}
@@ -29,6 +29,5 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/users", http.HandlerFunc(app.CheckMethod))
 
-	address := cfg.Ip + ":" + cfg.Port
-	log.Fatal(http.ListenAndServe(address, mux))
+	log.Fatal(http.ListenAndServe(cfg.Addr, mux))
 }
