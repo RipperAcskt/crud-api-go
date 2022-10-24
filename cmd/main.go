@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -16,7 +17,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("config new failed: %v", err)
 	}
-
+	fmt.Println(cfg.Postgres)
 	pg, err := postgres.New(cfg.Postgres.GetConnectionUrl())
 	if err != nil {
 		log.Fatalf("postgres new failed: %v", err)
