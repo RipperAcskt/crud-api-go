@@ -23,7 +23,7 @@ type Postgres struct {
 func New() (*Config, error) {
 	yamlFile, err := ioutil.ReadFile("../config/config.yaml")
 	if err != nil {
-		return nil, fmt.Errorf("readFile failed: %v", err)
+		return nil, fmt.Errorf("read file failed: %v", err)
 	}
 
 	c := &Config{}
