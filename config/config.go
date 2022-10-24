@@ -8,20 +8,20 @@ import (
 )
 
 type Config struct {
-	Addr     string
-	Postgres *Postgres `yaml:"Postgres"`
+	Addr     string    `yaml:"addr"`
+	Postgres *Postgres `yaml:"postgres"`
 }
 
 type Postgres struct {
-	Host     string
-	Port     string
-	User     string
-	Password string
-	DBName   string `yaml:"DBName"`
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	DBName   string `yaml:"db_name"`
 }
 
 func New() (*Config, error) {
-	yamlFile, err := ioutil.ReadFile("config/config.yaml")
+	yamlFile, err := ioutil.ReadFile("./config/config.yaml")
 	if err != nil {
 		return nil, fmt.Errorf("read file failed: %v", err)
 	}

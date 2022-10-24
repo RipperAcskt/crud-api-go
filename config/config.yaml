@@ -1,7 +1,7 @@
 addr: :8080
-Postgres:
+postgres:
   host: localhost
   port: "5432"
   user: ripper
   password: "150403"
-  DBName: demo
+  db_name: demo
