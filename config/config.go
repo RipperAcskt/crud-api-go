@@ -9,7 +9,7 @@ import (
 
 type Config struct {
 	Addr     string
-	Postgres *Postgres `yaml:",inline"`
+	Postgres *Postgres `yaml:"Postgres"`
 }
 
 type Postgres struct {
@@ -17,11 +17,11 @@ type Postgres struct {
 	Port     string
 	User     string
 	Password string
-	DBName   string
+	DBName   string `yaml:"DBName"`
 }
 
 func New() (*Config, error) {
-	yamlFile, err := ioutil.ReadFile("../config/config.yaml")
+	yamlFile, err := ioutil.ReadFile("config/config.yaml")
 	if err != nil {
 		return nil, fmt.Errorf("read file failed: %v", err)
 	}
