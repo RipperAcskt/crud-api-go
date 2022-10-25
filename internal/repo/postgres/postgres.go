@@ -14,7 +14,7 @@ type Postgres struct {
 func New(url string) (*Postgres, error) {
 	db, err := sql.Open("pgx", url)
 	if err != nil {
-		return nil, fmt.Errorf("open faild: %v", err)
+		return nil, fmt.Errorf("open failed: %v", err)
 	}
 
 	return &Postgres{

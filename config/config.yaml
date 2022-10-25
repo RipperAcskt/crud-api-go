@@ -1,0 +1,7 @@
+addr: :8080
+postgres:
+  host: localhost
+  port: "5432"
+  user: ripper
+  password: "150403"
+  db_name: demo
