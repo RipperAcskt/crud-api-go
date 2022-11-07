@@ -21,6 +21,11 @@ func main() {
 		log.Fatalf("postgres new failed: %v", err)
 	}
 
+	err = pg.Migrate.Up()
+	if err != nil {
+		log.Fatalf("migrate up failed: %v", err)
+	}
+
 	app := restapi.New(pg)
 
 	defer app.Close()
